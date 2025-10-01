@@ -1,0 +1,37 @@
+import base64
+import cv2
+import numpy as np
+import webbrowser
+from flask import Flask, request, jsonify
+from deepface import DeepFace
+from flask_cors import CORS 
+
+app = Flask(__name__)
+CORS(app)  
+
+playlists = {
+    "happy": "https://open.spotify.com/playlist/37i9dQZF1DXdPec7aLTmlC",
+    "sad": "https://open.spotify.com/playlist/37i9dQZF1DWVrtsSlLKzro",
+    "angry": "https://open.spotify.com/playlist/37i9dQZF1DXd7j5DaScwJk",
+    "neutral": "https://open.spotify.com/playlist/37i9dQZF1DX7KNKjOK0o75",
+    "fear": "https://open.spotify.com/playlist/37i9dQZF1DWVIzZt2GAU4X",
+    "surprise": "https://open.spotify.com/playlist/37i9dQZF1DX4fpCWaHOned",
+    "disgust": "https://open.spotify.com/playlist/37i9dQZF1DX3WvGXE8FqYX"
+}
+
+@app.route("/analyze", methods=["POST"])
+def analyze():
+    data = request.get_json()
+    img_data = data["image"].split(",")[1]
+    img_bytes = base64.b64decode(img_data)
+    nparr = np.frombuffer(img_bytes, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    result = DeepFace.analyze(img, actions=["emotion"], enforce_detection=False)
+    emotion = result[0]["dominant_emotion"]
+    playlist_url = playlists.get(emotion, playlists["neutral"])
+    webbrowser.open(playlist_url)
+
+    return jsonify({"emotion": emotion, "playlist": playlist_url})
+
+if __name__ == "__main__":
+    app.run(debug=True)

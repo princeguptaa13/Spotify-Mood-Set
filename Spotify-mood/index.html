@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Emotion Music Player</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: #333;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      max-width: 400px;
+      width: 90%;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    video, canvas, img {
+      border-radius: 10px;
+      margin-bottom: 15px;
+      max-width: 100%;
+    }
+
+    button {
+      background: #4facfe;
+      border: none;
+      padding: 12px 20px;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #00c6ff;
+    }
+
+    #result {
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    #redirectBtn {
+      display: none; /* Hidden until emotion is detected */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🎭 Emotion-based Music Player</h2>
+    <video id="video" width="320" height="240" autoplay></video>
+    <br>
+    <button id="capture">📸 Capture Mood</button>
+    <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+    <div id="preview"></div>
+    <div id="result"></div>
+    <button id="redirectBtn">🎵 Open Playlist</button>
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    const captureButton = document.getElementById('capture');
+    const previewDiv = document.getElementById('preview');
+    const resultDiv = document.getElementById('result');
+    const redirectBtn = document.getElementById('redirectBtn');
+
+    let playlistUrl = "";
+
+    // Get webcam access
+   navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => {
+    video.srcObject = stream;
+  })
+  .catch(err => {
+    console.error("Error accessing webcam:", err);
+    alert("⚠️ Cannot access webcam. Please allow camera permission.");
+  });
+
+    captureButton.addEventListener('click', () => {
+      // Draw frame on canvas
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = canvas.toDataURL("image/png");
+
+      // Show preview
+      previewDiv.innerHTML = `<img src="${imageData}" width="200" alt="Captured Photo"/>`;
+
+      fetch("http://127.0.0.1:5000/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageData })
+      })
+      .then(res => res.json())
+      .then(data => {
+        resultDiv.innerHTML = `Detected Mood: <span style="color:#4facfe;">${data.emotion}</span> 🎶`;
+        playlistUrl = data.playlist;
+        redirectBtn.style.display = "inline-block"; // Show redirect button
+      })
+      .catch(err => {
+        resultDiv.innerHTML = "⚠️ Error analyzing mood.";
+      });
+    });
+
+    redirectBtn.addEventListener('click', () => {
+      if (playlistUrl) {
+        window.open(playlistUrl, "_blank"); // open in new tab
+      }
+    });
+  </script>
+</body>
+</html>
