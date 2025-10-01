@@ -1,128 +1,416 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Emotion Music Player</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #4facfe, #00f2fe);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      color: #333;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎭 Emotion-based Music Player</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 15px;
-      text-align: center;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      max-width: 400px;
-      width: 90%;
-    }
+  body {
+    font-family: 'Circular', 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    position: relative;
+  }
 
-    h2 {
-      margin-bottom: 20px;
-    }
+  /* Animated background particles */
+  body::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 20% 50%, rgba(29, 185, 84, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(30, 215, 96, 0.08) 0%, transparent 50%);
+    animation: float 20s ease-in-out infinite;
+  }
 
-    video, canvas, img {
-      border-radius: 10px;
-      margin-bottom: 15px;
-      max-width: 100%;
-    }
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(-50px, -30px) rotate(10deg); }
+  }
 
-    button {
-      background: #4facfe;
-      border: none;
-      padding: 12px 20px;
-      color: white;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-      margin-top: 10px;
-    }
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    width: 90%;
+    background: rgba(24, 24, 24, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 40px 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    animation: slideUp 0.6s ease-out;
+  }
 
-    button:hover {
-      background: #00c6ff;
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
     }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
-    #result {
-      font-weight: bold;
-      margin-top: 15px;
-    }
+  h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #1DB954 0%, #1ed760 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+  }
 
-    #redirectBtn {
-      display: none; /* Hidden until emotion is detected */
-    }
-  </style>
+  .subtitle {
+    color: #b3b3b3;
+    font-size: 14px;
+    margin-bottom: 30px;
+    font-weight: 400;
+  }
+
+  .video-container {
+    position: relative;
+    margin-bottom: 25px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(29, 185, 84, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .video-container:hover {
+    border-color: rgba(29, 185, 84, 0.6);
+    transform: scale(1.02);
+  }
+
+  #video {
+    width: 100%;
+    height: auto;
+    display: block;
+    background: #000;
+  }
+
+  .video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.6) 100%);
+    pointer-events: none;
+  }
+
+  button {
+    background: linear-gradient(135deg, #1DB954 0%, #1ed760 100%);
+    color: #fff;
+    border: none;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(29, 185, 84, 0.4);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  button:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(29, 185, 84, 0.6);
+  }
+
+  button:active {
+    transform: translateY(0);
+  }
+
+  button:disabled {
+    background: linear-gradient(135deg, #535353 0%, #3e3e3e 100%);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  #loader {
+    display: none;
+    margin: 20px 0;
+    text-align: center;
+  }
+
+  .spinner {
+    border: 3px solid rgba(29, 185, 84, 0.2);
+    border-top: 3px solid #1DB954;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .loader-text {
+    color: #b3b3b3;
+    font-size: 14px;
+  }
+
+  #preview {
+    margin: 20px 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  #preview.show {
+    opacity: 1;
+  }
+
+  #preview img {
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(29, 185, 84, 0.3);
+  }
+
+  #result {
+    margin: 25px 0;
+    padding: 20px;
+    background: rgba(29, 185, 84, 0.1);
+    border-radius: 16px;
+    border: 1px solid rgba(29, 185, 84, 0.3);
+    font-size: 18px;
+    font-weight: 600;
+    display: none;
+    animation: fadeIn 0.5s ease;
+  }
+
+  #result.show {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .emotion-badge {
+    display: inline-block;
+    padding: 8px 20px;
+    background: linear-gradient(135deg, #1DB954 0%, #1ed760 100%);
+    border-radius: 30px;
+    font-size: 20px;
+    margin: 10px 0;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(29, 185, 84, 0.4);
+    letter-spacing: 1px;
+  }
+
+  #redirectBtn {
+    display: none;
+    margin-top: 15px;
+    background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+    color: #121212;
+  }
+
+  #redirectBtn.show {
+    display: block;
+    animation: slideUp 0.4s ease;
+  }
+
+  #redirectBtn:hover {
+    background: linear-gradient(135deg, #1DB954 0%, #1ed760 100%);
+    color: #fff;
+  }
+
+  canvas {
+    display: none;
+  }
+
+  .emoji {
+    font-size: 24px;
+    margin: 0 5px;
+  }
+
+  /* Pulse animation for mood detection */
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  .pulse {
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .creator-credit {
+    text-align: center;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: #b3b3b3;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .creator-credit .name {
+    color: #1DB954;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2>🎭 Emotion-based Music Player</h2>
-    <video id="video" width="320" height="240" autoplay></video>
-    <br>
-    <button id="capture">📸 Capture Mood</button>
-    <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
-    <div id="preview"></div>
-    <div id="result"></div>
-    <button id="redirectBtn">🎵 Open Playlist</button>
+
+<div class="container">
+  <h2><span class="emoji">🎭</span> Emotion Music Player</h2>
+  <p class="subtitle">Let your mood choose the perfect playlist</p>
+  
+  <div class="video-container">
+    <video id="video" width="420" height="315" autoplay></video>
+    <div class="video-overlay"></div>
   </div>
+  
+  <button id="capture"><span class="emoji">📸</span> Capture Your Mood</button>
+  
+  <div id="loader">
+    <div class="spinner"></div>
+    <div class="loader-text">Analyzing your emotion...</div>
+  </div>
+  
+  <canvas id="canvas" width="420" height="315"></canvas>
+  
+  <div id="preview"></div>
+  
+  <div id="result"></div>
+  
+  <button id="redirectBtn"><span class="emoji">🎵</span> Open Your Playlist</button>
 
-  <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
-    const captureButton = document.getElementById('capture');
-    const previewDiv = document.getElementById('preview');
-    const resultDiv = document.getElementById('result');
-    const redirectBtn = document.getElementById('redirectBtn');
+  <div class="creator-credit">
+    by <span class="name">Prince Gupta</span>
+  </div>
+</div>
 
-    let playlistUrl = "";
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const context = canvas.getContext('2d');
+const captureButton = document.getElementById('capture');
+const previewDiv = document.getElementById('preview');
+const resultDiv = document.getElementById('result');
+const redirectBtn = document.getElementById('redirectBtn');
+const loader = document.getElementById('loader');
 
-    // Get webcam access
-   navigator.mediaDevices.getUserMedia({ video: true })
-  .then(stream => {
+let playlistUrl = "";
+
+// Access webcam
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => { 
     video.srcObject = stream;
-  })
-  .catch(err => {
-    console.error("Error accessing webcam:", err);
-    alert("⚠️ Cannot access webcam. Please allow camera permission.");
-  });
+    video.classList.add('pulse');
+})
+.catch(err => { 
+    alert("Error accessing webcam: " + err);
+});
 
-    captureButton.addEventListener('click', () => {
-      // Draw frame on canvas
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = canvas.toDataURL("image/png");
+captureButton.addEventListener('click', async () => {
+    loader.style.display = "block";
+    resultDiv.classList.remove('show');
+    redirectBtn.classList.remove('show');
+    previewDiv.classList.remove('show');
+    captureButton.disabled = true;
 
-      // Show preview
-      previewDiv.innerHTML = `<img src="${imageData}" width="200" alt="Captured Photo"/>`;
+    // Capture frame
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = canvas.toDataURL("image/png");
 
-      fetch("http://127.0.0.1:5000/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: imageData })
-      })
-      .then(res => res.json())
-      .then(data => {
-        resultDiv.innerHTML = `Detected Mood: <span style="color:#4facfe;">${data.emotion}</span> 🎶`;
+    previewDiv.innerHTML = `<img src="${imageData}" width="200" alt="Captured Photo"/>`;
+    setTimeout(() => previewDiv.classList.add('show'), 100);
+
+    try {
+        const res = await fetch("http://127.0.0.1:5000/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: imageData })
+        });
+
+        const data = await res.json();
+        loader.style.display = "none";
+        captureButton.disabled = false;
+
+        if(data.error){
+            resultDiv.innerHTML = `<span class="emoji">⚠️</span> ${data.error}`;
+            resultDiv.classList.add('show');
+            return;
+        }
+
+        const emotionEmojis = {
+            'happy': '😊',
+            'sad': '😢',
+            'angry': '😠',
+            'neutral': '😐',
+            'surprise': '😲',
+            'fear': '😨',
+            'disgust': '🤢'
+        };
+
+        const emoji = emotionEmojis[data.emotion.toLowerCase()] || '🎵';
+
+        resultDiv.innerHTML = `
+            <div>Detected Mood</div>
+            <div class="emotion-badge">${emoji} ${data.emotion}</div>
+        `;
+        resultDiv.classList.add('show');
+        
         playlistUrl = data.playlist;
-        redirectBtn.style.display = "inline-block"; // Show redirect button
-      })
-      .catch(err => {
-        resultDiv.innerHTML = "⚠️ Error analyzing mood.";
-      });
-    });
+        redirectBtn.classList.add('show');
 
-    redirectBtn.addEventListener('click', () => {
-      if (playlistUrl) {
-        window.open(playlistUrl, "_blank"); // open in new tab
-      }
-    });
-  </script>
+    } catch(err) {
+        loader.style.display = "none";
+        captureButton.disabled = false;
+        resultDiv.innerHTML = `<span class="emoji">⚠️</span> Error analyzing mood. Please try again.`;
+        resultDiv.classList.add('show');
+        console.error(err);
+    }
+});
+
+redirectBtn.addEventListener('click', () => {
+    if (playlistUrl) window.open(playlistUrl, "_blank");
+});
+</script>
+
 </body>
 </html>
