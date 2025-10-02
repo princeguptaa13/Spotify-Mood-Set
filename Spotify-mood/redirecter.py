@@ -9,6 +9,10 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+@app.route("/")
+def home():
+    return "✅ Flask app is running on Render!"
+
 # Emotion → Spotify playlist mapping
 playlists = {
     "happy": "https://open.spotify.com/playlist/37i9dQZF1DXdPec7aLTmlC",

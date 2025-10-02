@@ -1,1 +1,2 @@
-web: gunicorn redirecter:app
+
+web: gunicorn redirecter:app --bind 0.0.0.0:$PORT
