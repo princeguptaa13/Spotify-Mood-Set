@@ -1,7 +1,7 @@
 import base64
 import cv2
 import numpy as np
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from deepface import DeepFace
 from flask_cors import CORS 
 import os
@@ -9,9 +9,10 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+# Home route → serves your index.html
 @app.route("/")
 def home():
-    return "✅ Flask app is running on Render!"
+    return render_template("index.html")
 
 # Emotion → Spotify playlist mapping
 playlists = {
@@ -56,4 +57,3 @@ def analyze():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # get PORT from Render
     app.run(host="0.0.0.0", port=port)
-
